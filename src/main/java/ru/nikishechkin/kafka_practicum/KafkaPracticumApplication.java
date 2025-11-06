@@ -1,4 +1,4 @@
-package ru.nikishechkin.kafka_project_4;
+package ru.nikishechkin.kafka_practicum;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

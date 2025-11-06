@@ -1,0 +1,8 @@
+### Отправить сообщение в топик Kafka
+POST http://localhost:8086/api/kafka/send?key=m1
+Content-Type: application/json
+
+{
+  "number": 1,
+  "message": "Test message"
+}

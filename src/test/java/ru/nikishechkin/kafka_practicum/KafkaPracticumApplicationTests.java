@@ -1,4 +1,4 @@
-package ru.nikishechkin.kafka_project_4;
+package ru.nikishechkin.kafka_practicum;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

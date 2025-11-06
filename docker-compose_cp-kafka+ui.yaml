@@ -38,8 +38,8 @@ services:
       #    Все listeners используют PLAINTEXT (без шифрования)
 
       # Настройки репликации для single-node кластера
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1        # Фактор репликации для топика __consumer_offsets (должен быть 1 для single-node)
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # Фактор репликации для топиков транзакций (должен быть 1 для single-node)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1        # Фактор репликации для топика __consumer_offsets (1 для single-node)
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # Фактор репликации для топиков транзакций (1 для single-node)
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1           # Минимальное in-sync реплик для топиков транзакций
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1              # Фактор репликации по умолчанию для новых топиков
       KAFKA_MIN_INSYNC_REPLICAS: 1                     # Минимальное количество in-sync реплик для записи
@@ -58,10 +58,14 @@ services:
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
     ports:
       - 8082:8080
     environment:
-      DYNAMIC_CONFIG_ENABLED: true                     # Включает динамическую конфигурацию через UI
+      KAFKA_CLUSTERS_0_NAME: "local-kafka-cluster"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka-0:9092"
+      #DYNAMIC_CONFIG_ENABLED: true                     # Включает динамическую конфигурацию через UI
 
 #  akhq:
 #    image: tchiotludo/akhq

@@ -1,5 +1,5 @@
 services:
-  kafka:
+  kafka-0:
     image: confluentinc/cp-kafka:latest
     container_name: kafka-0  # Явное имя контейнера
     hostname: kafka-0        # hostname
@@ -14,7 +14,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER      # Имя listener'а для контроллера (внутренняя коммуникация)
 
       # Конфигурация кворума контроллеров
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-0:9093   # Список участников кворума: <node_id>@<host>:<port>. Для single-node: только одна нода
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
 
       # Идентификатор кластера
       KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv" # Уникальный ID кластера. Должен быть фиксированным для перезапусков
@@ -44,13 +44,6 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1              # Фактор репликации по умолчанию для новых топиков
       KAFKA_MIN_INSYNC_REPLICAS: 1                     # Минимальное количество in-sync реплик для записи
 
-      # Основная настройка директории логов
-      KAFKA_LOG_DIRS: "/kafka/logs"
-
-      # Дополнительные настройки логирования
-      KAFKA_LOG_RETENTION_HOURS: 168      # Хранение логов 7 дней
-      KAFKA_LOG_SEGMENT_BYTES: 1073741824 # 1GB на сегмент
-      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000 # Проверка каждые 5 минут
     volumes:
       # Маппинг директории на хост
       - ./kafka-logs:/kafka/logs
