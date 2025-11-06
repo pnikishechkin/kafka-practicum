@@ -1,0 +1,84 @@
+services:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-0  # Явное имя контейнера
+    hostname: kafka-0        # hostname
+    ports:
+      - "9092:9092"   # Для PLAINTEXT listener
+      - "9094:9094"   # Для EXTERNAL listener (если нужен)
+    environment:
+      # KRaft режим (без Zookeeper)
+      KAFKA_ENABLE_KRAFT: "yes"                        # Включаем KRaft режим (Kafka Raft metadata mode) - новая архитектура без Zookeeper
+      KAFKA_NODE_ID: 0                                 # Уникальный идентификатор ноды в кластере. Должен совпадать с ID в QUORUM_VOTERS
+      KAFKA_PROCESS_ROLES: broker,controller           # Роли процесса: broker (обработка данных) и controller (управление метаданными)
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER      # Имя listener'а для контроллера (внутренняя коммуникация)
+
+      # Конфигурация кворума контроллеров
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-0:9093   # Список участников кворума: <node_id>@<host>:<port>. Для single-node: только одна нода
+
+      # Идентификатор кластера
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv" # Уникальный ID кластера. Должен быть фиксированным для перезапусков
+
+      # Listeners (точки подключения)
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      # Определяет listeners:
+      #    PLAINTEXT://:9092    - внутренний listener для клиентов внутри Docker-сети
+      #    CONTROLLER://:9093   - внутренний listener для контроллеров (KRaft)
+      #    EXTERNAL://:9094     - внешний listener для клиентов с хоста
+
+      # Advertised Listeners (как клиенты подключаются)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-0:9092,EXTERNAL://localhost:9094
+      # Адреса, которые Kafka сообщает клиентам для подключения:
+      #    PLAINTEXT://kafka-0:9092   - для клиентов внутри Docker-сети (по имени контейнера)
+      #    EXTERNAL://localhost:9094  - для клиентов с хостовой машины (через localhost)
+
+      # Протоколы безопасности для listeners
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      # Сопоставляет listeners с протоколами безопасности:
+      #    Все listeners используют PLAINTEXT (без шифрования)
+
+      # Настройки репликации для single-node кластера
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1        # Фактор репликации для топика __consumer_offsets (1 для single-node)
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # Фактор репликации для топиков транзакций (1 для single-node)
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1           # Минимальное in-sync реплик для топиков транзакций
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1              # Фактор репликации по умолчанию для новых топиков
+      KAFKA_MIN_INSYNC_REPLICAS: 1                     # Минимальное количество in-sync реплик для записи
+
+      # Основная настройка директории логов
+      KAFKA_LOG_DIRS: "/kafka/logs"
+
+      # Дополнительные настройки логирования
+      KAFKA_LOG_RETENTION_HOURS: 168      # Хранение логов 7 дней
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824 # 1GB на сегмент
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000 # Проверка каждые 5 минут
+    volumes:
+      # Маппинг директории на хост
+      - ./kafka-logs:/kafka/logs
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8082:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: true                     # Включает динамическую конфигурацию через UI
+
+#  akhq:
+#    image: tchiotludo/akhq
+#    environment:
+#      # Подключение к Kafka по имени сервиса (Docker DNS)
+#      AKHQ_CONFIGURATION: |
+#        akhq:
+#          connections:
+#            docker-kafka:
+#              properties:
+#                bootstrap.servers: "kafka:9092"
+#    ports:
+#      - "8080:8080"
+#
+#  kafdrop:
+#    image: obsidiandynamics/kafdrop
+#    environment:
+#      KAFKA_BROKERCONNECT: kafka:9092                  # Подключение к Kafka брокеру по имени сервиса
+#    ports:
+#      - "9000:9000"
