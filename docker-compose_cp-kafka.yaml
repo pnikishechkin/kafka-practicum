@@ -5,7 +5,7 @@ services:
     hostname: kafka-0        # hostname
     ports:
       - "9092:9092"   # Для PLAINTEXT listener
-      - "9094:9094"   # Для EXTERNAL listener (если нужен)
+      - "9094:9094"   # Для EXTERNAL listener
     environment:
       # KRaft режим (без Zookeeper)
       KAFKA_ENABLE_KRAFT: "yes"                        # Включаем KRaft режим (Kafka Raft metadata mode) - новая архитектура без Zookeeper
@@ -22,9 +22,9 @@ services:
       # Listeners (точки подключения)
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
       # Определяет listeners:
-      #    PLAINTEXT://:9092    - внутренний listener для клиентов внутри Docker-сети
+      #    PLAINTEXT://:9092    - внутренний listener для внутренней связи между брокерами
       #    CONTROLLER://:9093   - внутренний listener для контроллеров (KRaft)
-      #    EXTERNAL://:9094     - внешний listener для клиентов с хоста
+      #    EXTERNAL://:9094     - внешний listener для клиентов с хоста (producer/consumer/streams/etc)
 
       # Advertised Listeners (как клиенты подключаются)
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-0:9092,EXTERNAL://localhost:9094
@@ -33,16 +33,18 @@ services:
       #    EXTERNAL://localhost:9094  - для клиентов с хостовой машины (через localhost)
 
       # Протоколы безопасности для listeners
+      # Сопоставляет listeners с протоколами безопасности: все listeners используют PLAINTEXT (без шифрования)
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      # Сопоставляет listeners с протоколами безопасности:
-      #    Все listeners используют PLAINTEXT (без шифрования)
 
-      # Настройки репликации для single-node кластера
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1        # Фактор репликации для топика __consumer_offsets (1 для single-node)
+      # Настройки репликации
+      # Системные топики
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1         # Фактор репликации для топика __consumer_offsets (1 для single-node) - На скольких брокерах хранится копия данных?
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # Фактор репликации для топиков транзакций (1 для single-node)
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1           # Минимальное in-sync реплик для топиков транзакций
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1              # Фактор репликации по умолчанию для новых топиков
-      KAFKA_MIN_INSYNC_REPLICAS: 1                     # Минимальное количество in-sync реплик для записи
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1            # Минимальное количество in-sync реплик (ISR) для топиков транзакций
+
+      # Пользовательские топики
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1               # Фактор репликации по умолчанию для новых топиков
+      KAFKA_MIN_INSYNC_REPLICAS: 1                      # Минимальное количество in-sync реплик для записи - Сколько подтверждений нужно для успешной записи?
 
       # Основная настройка директории логов
       KAFKA_LOG_DIRS: "/kafka/logs"

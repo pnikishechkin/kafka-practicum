@@ -1,0 +1,135 @@
+services:
+  kafka-0:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-0
+    hostname: kafka-0
+    ports:
+      - "9094:9094" # Уникальный внешний порт для внешних подключений, внутренний - одинаковый
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      KAFKA_NODE_ID: 0 # уникальный для каждой ноды
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-0:9093, 1@kafka-1:9093, 2@kafka-2:9093 # все ноды (порты контроллера)
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094 # можно использовать одинаковые внутренние порты
+
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-0:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      KAFKA_LOG_DIRS: "/kafka/logs"
+
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+    volumes:
+      - ./kafka-logs:/kafka/logs
+
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-1
+    hostname: kafka-1
+    ports:
+      - "9095:9094"
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-0:9093, 1@kafka-1:9093, 2@kafka-2:9093
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,EXTERNAL://localhost:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      KAFKA_LOG_DIRS: "/kafka/logs"
+
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+    volumes:
+      - ./kafka-logs-1:/kafka/logs
+
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-2
+    hostname: kafka-2
+    ports:
+      - "9096:9094"
+    environment:
+      KAFKA_ENABLE_KRAFT: "yes"
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 0@kafka-0:9093, 1@kafka-1:9093, 2@kafka-2:9093
+      KAFKA_KRAFT_CLUSTER_ID: "abcdefghijklmnopqrstuv"
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,EXTERNAL://localhost:9096
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      KAFKA_LOG_DIRS: "/kafka/logs"
+
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+    volumes:
+      - ./kafka-logs-2:/kafka/logs
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+    ports:
+      - 8082:8080
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "local-kafka-cluster"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka-0:9092"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sprint-boot-app
+    ports:
+      - "8086:8080"
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      - SERVER_PORT=8080
+      - SERVER_ADDRESS=0.0.0.0
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

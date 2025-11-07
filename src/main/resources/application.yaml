@@ -1,29 +1,38 @@
 server:
-    port: 8086
+    port: 8080
+    address: 0.0.0.0
 
 spring:
     application:
         name: kafka-practicum
     kafka:
         # Адреса всех брокеров кластера
-        bootstrap-servers: localhost:9094
+        bootstrap-servers: localhost:9094,localhost:9095,localhost:9096
         # Параметры продюсера (отправителя)
         producer:
-            # client-id: my-spring-app
+            client-id: my-producer # идентификатор продюсера - нужен для идентификации и удобства мониторинга
             key-serializer: org.apache.kafka.common.serialization.StringSerializer
             value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
             properties:
+                # Не добавлять в сообщение заголовки с описанием типа объекта (чистый json).
+                # Consumer узнает тип или из default.type, или при указании в @KafkaListener
                 spring.json.add.type.headers: false
+                spring.json.trusted.packages: "*"
+            # Количество автоматических повторных попыток отправки сообщений при временных сбоях
             retries: 3
-
+        # Параметры консьюмера (получателя)
         consumer:
-            group-id: my-consumer-group
-            autoOffsetReset: earliest
+            group-id: my-consumer-group # уникальный идентификатор группы (консьюмеры могут приналежать одной группе)
             key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
             value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
             properties:
                 spring.json.value.default.type: ru.nikishechkin.kafka_practicum.dto.Message
                 spring.json.trusted.packages: "*"
+            # Определяет, что делать, если нет сохраненного смещения для группы:
+            # - earliest - начинать чтение с самого старого доступного сообщения,
+            # - latest - начинать чтение с самого нового сообщения
+            auto-offset-reset: earliest
+            enable-auto-commit: true # автоматически сохранять смещения (offset), после получения сообщений
 #                spring.json.use.type.headers: false
 
 

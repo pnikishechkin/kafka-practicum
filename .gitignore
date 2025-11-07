@@ -33,3 +33,6 @@ build/
 .vscode/
 /kafka-logs/
 /.mvn/
+/kafka-logs-1/
+/kafka-logs-2/
+/logs/

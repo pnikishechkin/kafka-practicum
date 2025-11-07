@@ -3,7 +3,7 @@ package ru.nikishechkin.kafka_practicum.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.nikishechkin.kafka_practicum.dto.Message;
-import ru.nikishechkin.kafka_practicum.kafka.KafkaProducerService;
+import ru.nikishechkin.kafka_practicum.service.KafkaProducerService;
 
 @RestController
 @RequestMapping("/api/kafka")
