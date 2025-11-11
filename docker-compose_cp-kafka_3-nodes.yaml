@@ -119,17 +119,22 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: sprint-boot-app
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
     ports:
-      - "8086:8080"
-    environment:
-      - JAVA_OPTS=-Xmx512m -Xms256m
-      - SERVER_PORT=8080
-      - SERVER_ADDRESS=0.0.0.0
+      - "8087:8080"
+#    environment:
+#      - JAVA_OPTS=-Xmx512m -Xms256m
+#      - SERVER_PORT=8080
+#      - SERVER_ADDRESS=0.0.0.0
+#      - SPRING_KAFKA_BOOTSTRAP_SERVERS="kafka-0:9092,kafka-1:9092,kafka-2:9092"
     volumes:
       - ./logs:/app/logs
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+#    networks:
+#      - app-network
+#
+#networks:
+#  app-network:
+#    driver: bridge

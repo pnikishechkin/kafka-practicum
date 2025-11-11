@@ -6,14 +6,14 @@
 - консьюмер
 - докер образ для настройки кластера Kafka
 
-## Разворачивание приложения
+## Сборка и запуск
 
-1. Развернуть **`docker-compose_cp-kafka_3-nodes.yaml`** 
+1. Собрать приложение командой **`mvn clean install`**
+2. Развернуть Docker compose командой: **`docker compose -f docker-compose_cp-kafka_3-nodes.yaml up --build app`** 
 2. Создать через терминал топик  с 3 партициями и 2 репликами:
    - **`docker exec -it kafka-0 /bin/bash`**
    - **`cd /usr/bin`**
    - **`kafka-topics --create --topic my-topic --partitions 5 --replication-factor 1 --bootstrap-server localhost:9092`**
-3. 
 
 ## Параметры docker файла для настройки кластера Kafka
 

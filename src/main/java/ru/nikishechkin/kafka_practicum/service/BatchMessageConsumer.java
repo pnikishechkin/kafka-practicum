@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 import ru.nikishechkin.kafka_practicum.dto.Message;
 
 @Service
-public class KafkaConsumerService {
+public class BatchMessageConsumer {
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaConsumerService.class);
+    private final Logger logger = LoggerFactory.getLogger(BatchMessageConsumer.class);
 
-    @KafkaListener(topics = "my-topic", groupId = "my-consumer-group")
+    @KafkaListener(topics = "my-topic", groupId = "batch-consumer-group")
     public void receiveMessage(
             // Тело сообщения - @Payload явно указывает, что параметр должен быть извлечен из тела сообщения Kafka
             @Payload Message message,
@@ -26,7 +26,6 @@ public class KafkaConsumerService {
             logger.info("[ПОЛУЧЕНО СООБЩЕНИЕ] Ключ: {} | Партиция: {} | Смещение: {} | Сообщение: {}", key, partition, offset, message);
         } catch (Exception e) {
             logger.error("Error processing message: {}", e.getMessage());
-
             // TODO Отправить сообщение в DLQ (Dead Letter Queue)
         }
     }
