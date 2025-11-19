@@ -7,9 +7,9 @@ spring:
     kafka:
         # Адреса всех брокеров кластера
         bootstrap-servers: kafka-0:9092
-        # Параметры продюсера (отправителя)
+        # Параметры продюсеров (отправителей) ПО УМОЛЧАНИЮ
         producer:
-            client-id: my-producer # идентификатор продюсера - нужен для идентификации и удобства мониторинга
+            # client-id: my-producer # идентификатор продюсера - нужен для идентификации и удобства мониторинга
             key-serializer: org.apache.kafka.common.serialization.StringSerializer
             value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
             properties:
@@ -19,9 +19,9 @@ spring:
                 spring.json.trusted.packages: "*"
             # Количество автоматических повторных попыток отправки сообщений при временных сбоях
             retries: 3
-        # Параметры консьюмера (получателя)
+        # Параметры консьюмеров (получателя) ПО УМОЛЧАНИЮ
         consumer:
-            group-id: single-consumer-group # уникальный идентификатор группы (консьюмеры могут приналежать одной группе)
+            # group-id: single-consumer-group # уникальный идентификатор группы (консьюмеры могут приналежать одной группе)
             key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
             value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
             properties:
@@ -31,10 +31,12 @@ spring:
             # - earliest - начинать чтение с самого старого доступного сообщения,
             # - latest - начинать чтение с самого нового сообщения
             auto-offset-reset: earliest
-            enable-auto-commit: true # автоматически сохранять смещения (offset), после получения сообщений
-            max-poll-records: 1 # Только одно сообщение за раз
-            fetch-min-size: 1 # Минимум 1 сообщение
+            #enable-auto-commit: false # автоматически сохранять смещения (offset), после получения сообщений
+            #max-poll-records: 1 # Только одно сообщение за раз
+            #fetch-min-size: 1 # Минимум 1 сообщение
 
+        #listener:
+        #    ack-mode: manual
 
 #kafka:
 #    topics:
